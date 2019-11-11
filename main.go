@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 )
 
-var path,oldstr, newstr string
+var path, oldstr, newstr string
 
 func main() {
 
@@ -21,10 +21,9 @@ func main() {
 	dir(path)
 }
 
-
 func dir(dirpath string) {
 
-	infos , err := ioutil.ReadDir(dirpath)
+	infos, err := ioutil.ReadDir(dirpath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,7 +37,7 @@ func dir(dirpath string) {
 }
 
 func replace(filename string) {
-	data ,err := ioutil.ReadFile(filename)
+	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
