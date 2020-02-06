@@ -24,7 +24,7 @@ func main() {
 	flag.StringVar(&dir, "d", "", "文件路径")
 	flag.StringVar(&oldstr, "o", "", "原字符串")
 	flag.StringVar(&newstr, "n", "", "新字符串")
-	flag.BoolVar(&hidden, "h", true, "忽略隐藏文件")
+	flag.BoolVar(&hidden, "H", true, "忽略隐藏文件")
 	flag.StringVar(&include, "i", "", "指定包含字符串的文件名，逗号分隔多个, 修改内容才有效")
 	flag.StringVar(&exclude, "e", "", "跳过指定包含字符串的文件名，逗号分隔多个， 修改内容才有效")
 	flag.Parse()
