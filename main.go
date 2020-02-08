@@ -19,6 +19,7 @@ var excludeList []string
 var hidden bool
 
 func main() {
+	log.Fatal(1)
 	flag.StringVar(&module, "m", "", "文件路径")
 	flag.StringVar(&file_path, "f", "", "修改内容才支持文件路径")
 	flag.StringVar(&dir, "d", "", "文件路径")
@@ -37,6 +38,10 @@ func main() {
 	if module == "content" {
 		// 修改内容
 		if dir != "" {
+			if !filepath.IsAbs(dir) {
+				pre_path, _ := filepath.Abs(".")
+				dir = filepath.Join(pre_path, dir)
+			}
 			file_dir(dir)
 		} else if file_path != "" {
 			replace(file_path)
@@ -46,6 +51,10 @@ func main() {
 	} else if module == "name" {
 		// 修改文件名
 		if dir != "" {
+			if !filepath.IsAbs(dir) {
+				pre_path, _ := filepath.Abs(".")
+				dir = filepath.Join(pre_path, dir)
+			}
 			walkdir(dir, oldstr, newstr)
 		} else {
 			log.Fatal("not specify dir")
