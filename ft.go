@@ -22,7 +22,6 @@ var delete bool
 var mtime int
 
 func main() {
-	log.Fatal(1)
 	flag.StringVar(&module, "m", "", "是修改内容还是文件名 content | name | delete")
 	flag.StringVar(&file_path, "f", "", "修改内容才支持文件路径")
 	flag.StringVar(&dir, "d", "", "文件路径")
