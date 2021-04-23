@@ -22,6 +22,7 @@ var delete bool
 var mtime int
 
 func main() {
+	// defer golog.Sync()
 	flag.StringVar(&module, "m", "", "是修改内容还是文件名 content | name | delete")
 	flag.StringVar(&file_path, "f", "", "修改内容才支持文件路径")
 	flag.StringVar(&dir, "d", "", "文件路径")
@@ -61,7 +62,7 @@ func main() {
 	case "name":
 		walkdir(dir, oldstr, newstr)
 	case "delete":
-		walkdir(dir, oldstr, newstr)
+		walkDirDelete(dir)
 	default:
 		fmt.Println("module must be content or name")
 	}
@@ -137,11 +138,11 @@ func walkDirDelete(thisdir string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("dir:", thisdir)
 	for _, fi := range fl {
 		if fi.IsDir() {
 			walkDirDelete(filepath.Join(thisdir, fi.Name()))
 		} else {
+
 			if len(include) > 0 {
 				if strInArray(fi.Name(), includeList) {
 					if mtime > 0 && time.Since(fi.ModTime()) < time.Hour*24*time.Duration(mtime) {
@@ -153,6 +154,7 @@ func walkDirDelete(thisdir string) {
 					continue
 				}
 			}
+			fmt.Println("delete: ", filepath.Join(thisdir, fi.Name()))
 			os.RemoveAll(filepath.Join(thisdir, fi.Name()))
 		}
 	}
