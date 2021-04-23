@@ -12,9 +12,9 @@
 -i  指定包含字符串的文件名，逗号分隔多个, 修改内容才有效
 -e   跳过指定包含字符串的文件名，逗号分隔多个， 修改内容才有效
 // 将文件夹 /data/ 下面所有文件内容里面的111替换成222
-go run fp.go -m content -d /data/ -o 111 -n 222
+go run ft.go -m content -d /data/ -o 111 -n 222
 // 将文件夹 /data/ 下面所有文件名111替换成222
-go run fp.go -m name -d /data/ -o 111 -n 222
+go run ft.go -m name -d /data/ -o 111 -n 222
 // 删除超过1天的txt文件
-go run fp.go -m delete -d /data/ -i txt -t 1
+go run ft.go -m delete -d /data/ -i txt -t 1
 ```
