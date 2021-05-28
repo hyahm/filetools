@@ -18,7 +18,7 @@ var dir, oldstr, newstr, file_path, include, exclude, module string
 var includeList []string
 var excludeList []string
 var hidden bool
-var delete bool
+var dictionary bool
 var mtime int
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 	flag.StringVar(&oldstr, "o", "", "原字符串")
 	flag.StringVar(&newstr, "n", "", "新字符串")
 	flag.BoolVar(&hidden, "H", true, "忽略隐藏文件")
-	flag.BoolVar(&delete, "R", false, "删除目录")
+	flag.BoolVar(&dictionary, "R", false, "是否删除目录(-m 为 delete 才生效)")
 	flag.IntVar(&mtime, "t", 0, "选择时间")
 	flag.StringVar(&include, "i", "", "指定包含字符串的文件名，逗号分隔多个, 修改内容才有效")
 	flag.StringVar(&exclude, "e", "", "跳过指定包含字符串的文件名，逗号分隔多个， 修改内容才有效")
@@ -140,22 +140,25 @@ func walkDirDelete(thisdir string) {
 	}
 	for _, fi := range fl {
 		if fi.IsDir() {
-			walkDirDelete(filepath.Join(thisdir, fi.Name()))
-		} else {
-
-			if len(include) > 0 {
-				if strInArray(fi.Name(), includeList) {
-					if mtime > 0 && time.Since(fi.ModTime()) < time.Hour*24*time.Duration(mtime) {
-						// 没超过天数就跳过
-						continue
+			if dictionary {
+				// 如果删除目录的话，那么不用递归，直接删除目录
+				if len(include) > 0 && strInArray(fi.Name(), includeList) {
+					if mtime == 0 || (mtime > 0 && time.Since(fi.ModTime()) >= time.Hour*24*time.Duration(mtime)) {
+						os.RemoveAll(filepath.Join(thisdir, fi.Name()))
 					}
-				} else {
-					// 不包含直接跳过
 					continue
 				}
 			}
-			fmt.Println("delete: ", filepath.Join(thisdir, fi.Name()))
-			os.RemoveAll(filepath.Join(thisdir, fi.Name()))
+			walkDirDelete(filepath.Join(thisdir, fi.Name()))
+
+		} else {
+
+			if len(include) > 0 && strInArray(fi.Name(), includeList) {
+				if mtime == 0 || (mtime > 0 && time.Since(fi.ModTime()) >= time.Hour*24*time.Duration(mtime)) {
+					fmt.Println("delete: ", filepath.Join(thisdir, fi.Name()))
+					os.RemoveAll(filepath.Join(thisdir, fi.Name()))
+				}
+			}
 		}
 	}
 }
