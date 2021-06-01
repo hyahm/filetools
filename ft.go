@@ -150,6 +150,7 @@ func walkDirDelete(thisdir string) {
 					continue
 				}
 				os.RemoveAll(filepath.Join(thisdir, fi.Name()))
+				continue
 			}
 			walkDirDelete(filepath.Join(thisdir, fi.Name()))
 
