@@ -140,15 +140,16 @@ func walkDirDelete(thisdir string) {
 	}
 	for _, fi := range fl {
 		if fi.IsDir() {
-			fmt.Println(dictionary)
 			if dictionary {
 				// 如果删除目录的话，那么不用递归，直接删除目录
 				if len(include) > 0 && strInArray(fi.Name(), includeList) {
 					if mtime == 0 || (mtime > 0 && time.Since(fi.ModTime()) >= time.Hour*24*time.Duration(mtime)) {
+						fmt.Println("delete ", filepath.Join(thisdir, fi.Name()))
 						os.RemoveAll(filepath.Join(thisdir, fi.Name()))
 					}
 					continue
 				}
+				fmt.Println("delete ", filepath.Join(thisdir, fi.Name()))
 				os.RemoveAll(filepath.Join(thisdir, fi.Name()))
 				continue
 			}
@@ -163,6 +164,7 @@ func walkDirDelete(thisdir string) {
 				}
 				continue
 			}
+			fmt.Println("delete ", filepath.Join(thisdir, fi.Name()))
 			os.RemoveAll(filepath.Join(thisdir, fi.Name()))
 		}
 	}
