@@ -139,34 +139,23 @@ func walkDirDelete(thisdir string) {
 		log.Fatal(err)
 	}
 	for _, fi := range fl {
-		if fi.IsDir() {
-			if dictionary {
-				// 如果删除目录的话，那么不用递归，直接删除目录
-				if len(include) > 0 && strInArray(fi.Name(), includeList) {
-					if mtime == 0 || (mtime > 0 && time.Since(fi.ModTime()) >= time.Hour*24*time.Duration(mtime)) {
-						fmt.Println("delete ", filepath.Join(thisdir, fi.Name()))
-						os.RemoveAll(filepath.Join(thisdir, fi.Name()))
-					}
-					continue
-				}
-				fmt.Println("delete ", filepath.Join(thisdir, fi.Name()))
-				os.RemoveAll(filepath.Join(thisdir, fi.Name()))
-				continue
-			}
-			walkDirDelete(filepath.Join(thisdir, fi.Name()))
-
-		} else {
-
-			if len(include) > 0 && strInArray(fi.Name(), includeList) {
-				if mtime == 0 || (mtime > 0 && time.Since(fi.ModTime()) >= time.Hour*24*time.Duration(mtime)) {
-					fmt.Println("delete: ", filepath.Join(thisdir, fi.Name()))
-					os.RemoveAll(filepath.Join(thisdir, fi.Name()))
-				}
-				continue
-			}
-			fmt.Println("delete ", filepath.Join(thisdir, fi.Name()))
-			os.RemoveAll(filepath.Join(thisdir, fi.Name()))
+		if mtime > 0 && time.Since(fi.ModTime()) < time.Hour*24*time.Duration(mtime) {
+			// 小于时间直接跳过
+			continue
 		}
+		// 文件名不符合的直接跳过
+		if len(include) > 0 && !strInArray(fi.Name(), includeList) {
+			continue
+		}
+		if fi.IsDir() && !dictionary {
+			// 如果是文件夹， 但不是递归的话
+			walkDirDelete(filepath.Join(thisdir, fi.Name()))
+			continue
+		}
+		fmt.Println("delete ", filepath.Join(thisdir, fi.Name()))
+		os.RemoveAll(filepath.Join(thisdir, fi.Name()))
+		continue
+
 	}
 }
 
