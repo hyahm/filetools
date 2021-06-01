@@ -30,7 +30,7 @@ func main() {
 	flag.StringVar(&newstr, "n", "", "新字符串")
 	flag.BoolVar(&hidden, "H", true, "忽略隐藏文件")
 	flag.BoolVar(&dictionary, "R", false, "是否删除目录(-m 为 delete 才生效)")
-	flag.IntVar(&mtime, "t", 0, "选择时间")
+	flag.IntVar(&mtime, "t", 0, "选择删除多少天以前的")
 	flag.StringVar(&include, "i", "", "指定包含字符串的文件名，逗号分隔多个, 修改内容才有效")
 	flag.StringVar(&exclude, "e", "", "跳过指定包含字符串的文件名，逗号分隔多个， 修改内容才有效")
 	flag.Parse()
@@ -140,6 +140,7 @@ func walkDirDelete(thisdir string) {
 	}
 	for _, fi := range fl {
 		if fi.IsDir() {
+			fmt.Println(dictionary)
 			if dictionary {
 				// 如果删除目录的话，那么不用递归，直接删除目录
 				if len(include) > 0 && strInArray(fi.Name(), includeList) {
@@ -148,6 +149,7 @@ func walkDirDelete(thisdir string) {
 					}
 					continue
 				}
+				os.RemoveAll(filepath.Join(thisdir, fi.Name()))
 			}
 			walkDirDelete(filepath.Join(thisdir, fi.Name()))
 
@@ -158,7 +160,9 @@ func walkDirDelete(thisdir string) {
 					fmt.Println("delete: ", filepath.Join(thisdir, fi.Name()))
 					os.RemoveAll(filepath.Join(thisdir, fi.Name()))
 				}
+				continue
 			}
+			os.RemoveAll(filepath.Join(thisdir, fi.Name()))
 		}
 	}
 }
