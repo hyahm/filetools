@@ -18,7 +18,7 @@ var dir, oldstr, newstr, file_path, include, exclude, module string
 var includeList []string
 var excludeList []string
 var hidden bool
-var dictionary bool
+var recurrence bool
 var mtime int
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 	flag.StringVar(&oldstr, "o", "", "原字符串")
 	flag.StringVar(&newstr, "n", "", "新字符串")
 	flag.BoolVar(&hidden, "H", true, "忽略隐藏文件")
-	flag.BoolVar(&dictionary, "R", false, "是否删除目录(-m 为 delete 才生效)")
+	flag.BoolVar(&recurrence, "R", false, "是否删除目录(-m 为 delete 才生效)")
 	flag.IntVar(&mtime, "t", 0, "选择删除多少天以前的")
 	flag.StringVar(&include, "i", "", "指定包含字符串的文件名，逗号分隔多个, 修改内容才有效")
 	flag.StringVar(&exclude, "e", "", "跳过指定包含字符串的文件名，逗号分隔多个， 修改内容才有效")
@@ -78,25 +78,22 @@ func fileDir(dirpath string) {
 		if hidden && info.Name()[0:1] == "." {
 			continue
 		}
-		if info.IsDir() {
+		if info.IsDir() && recurrence {
 			fileDir(filepath.Join(dirpath, info.Name()))
 		} else {
-			if include == "" && exclude == "" {
-				replace(filepath.Join(dirpath, info.Name()))
+			if mtime > 0 && time.Since(info.ModTime()) < time.Hour*24*time.Duration(mtime) {
+				// 小于时间直接跳过
 				continue
 			}
-			if include != "" && strInArray(info.Name(), includeList) {
+			if include != "" && !strInArray(info.Name(), includeList) {
 				// 名字包含在内， 包含优先不包含
-				fmt.Println(info.Name())
-				replace(filepath.Join(dirpath, info.Name()))
 				continue
 			}
 			if exclude != "" && !strInArray(info.Name(), excludeList) {
 				// 名字包含在内， 包含优先不包含
-				replace(filepath.Join(dirpath, info.Name()))
 				continue
 			}
-
+			replace(filepath.Join(dirpath, info.Name()))
 		}
 	}
 }
@@ -122,7 +119,7 @@ func walkdir(thisdir string, old, new string) {
 		if hidden && fi.Name()[0:1] == "." {
 			continue
 		}
-		if fi.IsDir() {
+		if fi.IsDir() && recurrence {
 			walkdir(filepath.Join(thisdir, fi.Name()), old, new)
 		} else {
 			if strings.Contains(fi.Name(), old) {
@@ -142,22 +139,39 @@ func walkDirDelete(thisdir string) {
 		if hidden && fi.Name()[0:1] == "." {
 			continue
 		}
-		if mtime > 0 && time.Since(fi.ModTime()) < time.Hour*24*time.Duration(mtime) {
-			// 小于时间直接跳过
-			continue
-		}
-		// 文件名不符合的直接跳过
-		if include != "" && !strInArray(fi.Name(), includeList) {
-			continue
-		}
-		if exclude != "" && !strInArray(fi.Name(), excludeList) {
-			// 名字包含在内， 包含优先不包含
-			continue
-		}
-		if fi.IsDir() && dictionary {
-			// 如果是文件夹， 且递归的话
-			walkDirDelete(filepath.Join(thisdir, fi.Name()))
-			continue
+		if !recurrence {
+			// 如果不是递归，那么直接检查根目录
+			if mtime > 0 && time.Since(fi.ModTime()) < time.Hour*24*time.Duration(mtime) {
+				// 小于时间直接跳过
+				continue
+			}
+			// 文件名不符合的直接跳过
+			if include != "" && !strInArray(fi.Name(), includeList) {
+				continue
+			}
+			if exclude != "" && !strInArray(fi.Name(), excludeList) {
+				// 名字包含在内， 包含优先不包含
+				continue
+			}
+		} else {
+			if fi.IsDir() {
+				// 如果是文件夹， 且递归的话
+				walkDirDelete(filepath.Join(thisdir, fi.Name()))
+				continue
+			} else {
+				if mtime > 0 && time.Since(fi.ModTime()) < time.Hour*24*time.Duration(mtime) {
+					// 小于时间直接跳过
+					continue
+				}
+				// 文件名不符合的直接跳过
+				if include != "" && !strInArray(fi.Name(), includeList) {
+					continue
+				}
+				if exclude != "" && !strInArray(fi.Name(), excludeList) {
+					// 名字包含在内， 包含优先不包含
+					continue
+				}
+			}
 		}
 
 		fmt.Println("delete ", filepath.Join(thisdir, fi.Name()))
